@@ -1,0 +1,276 @@
+# Comandos instalación de Target
+- mvn clean install -DskipTests
+
+
+# Credenciales de acceso en Docker Hub
+- docker login
+- docker logout
+
+
+# Comandos: imágenes y contenedores
+
+# Comandos para imágenes
+- docker build -t msvc-user -f .\msvc-user\Dockerfile . : Construir una imagen
+- Para etiquetar una imagen: docker tag msvc-user:latest msvc-user:1.0 , docker build -t msvc-user:1.0 .
+- Listar imágenes: docker images
+- Eliminar una image: docker rmi msvc-user:1.0 , docker image prune
+- Analizar una imagen: docker image inspect msvc-user:1.0
+# Comandos para contenedores
+
+- Para nombrar un contenedor: docker run --name msvc-user msvc-user:1.0
+- Listar contenedores: docker ps -a, docker container ls, docker container ps
+- Eliminar un contenedor: docker rm msvc-user, docker container prune
+- Analizar un contenedor: docker container inspect msvc-user
+- Correr, detener y reiniciar un contenedor: docker start msvc-user, docker stop msvc-user, docker restart msvc-user,   docker run -d
+
+- docker run -p 8001:8001 --rm -d  --name user msvc-user
+- docker run -p 8001:8001 --rm -it --name msvc-user /bin/sh
+- docker run -p 8001:8001 --rm -d --name msvc-user --network spring  msvc-user
+
+-- ENVIRONMENT FORMAS DE PASAR VARIABLES DE ENTORNO
+docker run --network host -p 8082:8082 restaurant-reservation-api
+- Ver los networks: docker network ls
+*  usando --env o -e
+- docker run -p 8001:8005 --env PORT=8005 --rm -d --name msvc-user --network spring  msvc-user
+* Por archivo .env usando --env-file
+- docker run -p 8001:8001 --env-file .\msvc-user\.env --rm -d --name msvc-user --network spring  msvc-user
+- docker run -p 8002:8002 --env-file .\msvc-course\.env --rm -d --name msvc-course --network spring msvc-course
+
+* Por ARG en Dockerfile
+- docker build -t msvc-user --build-arg PORT=8005 -f .\msvc-user\Dockerfile .
+- ARG PORT=8001 en Dockerfile
+
+docker run -p 8002:8002 --rm -d --name msvc-course --network spring  msvc-course
+--- docker run --restart=always
+
+- Acceder a un contenedor: docker exec -it msvc-user bash
+- Copiar archivos de un contenedor: docker cp msvc-user:/app/package.json .
+- Ver logs de un contenedor: docker logs msvc-user, docker logs -f msvc-user
+- Ver estadísticas de un contenedor: docker stats msvc-user
+- Atachar un contenedor: docker attach msvc-user
+
+-- network
+docker network create spring
+docker network connect spring msvc-user
+docker network connect spring msvc-course
+
+docker run -d -p 3307:3306 --name mysql8 --network spring -e MYSQL_ROOT_PASSWORD=matichelo17@ -e MYSQL_DATABASE=msvc_user -v data-mysql:/var/lib/mysql mysql:latest
+docker run -d -p 5434:5432 --name some-postgres --network spring -e POSTGRES_PASSWORD=Matichelo17 -e POSTGRES_DB=msvc_course -v data-postgres:/var/lib/postgresql/data postgres:13
+-- Ejecuciones de comandos en terminal de contenedor
+- Copiar archivos de un contenedor: docker cp msvc-user:/app/package.json .
+
+-- Volumnes
+- Crear un volumen: docker volume create data-mysql
+- Listar volúmenes: docker volume ls
+- Eliminar un volumen: docker volume rm data-mysql
+- Inspeccionar un volumen: docker volume inspect data-mysql
+
+-- Interactuar con contenedores de base de datos
+ docker run -it --rm --network spring mysql:latest /bin/bash
+- $ mysql -h mysql8 -u root -p
+-> mysql> show databases;
+-> mysql> use msvc_user;
+-> mysql> show tables;
+-> mysql> select * from user;
+ -- docker run -it --rm --network spring postgres:13 /bin/bash
+- $ psql -h some-postgres -U postgres
+-> postgres=# \l
+-> postgres=# \c msvc_course
+-> msvc_course=# \dt
+->postgres: \d+ course
+-> msvc_course=# select * from course;
+
+-- Versiones y significados
+latest	Etiqueta predeterminada; apunta a la versión más reciente.	docker pull nginx:latest	Es mutable: siempre apunta a la última versión subida, lo que puede causar inconsistencias si cambia.
+stable	Representa una versión probada y estable del software.	docker pull mysql:stable	Usada para entornos de producción, garantiza estabilidad pero no necesariamente incluye las últimas características.
+Número de versión	Indica una versión específica del software.	docker pull python:3.9.7	Es inmutable; asegura que siempre se descargue la misma versión, ideal para reproducibilidad y control de versiones.
+alpine	Versión ligera de la imagen basada en Alpine Linux.	docker pull node:alpine	Tamaño reducido, ideal para aplicaciones donde el rendimiento o almacenamiento son críticos.
+buster o bullseye	Versiones específicas de Debian usadas como base en imágenes oficiales.	docker pull postgres:bullseye	Indica la distribución de Linux subyacente, útil si se requiere compatibilidad con librerías específicas de esa versión.
+slim	Variante optimizada y mínima de una imagen.	docker pull python:3.9-slim	Reduce el tamaño del contenedor al eliminar componentes no esenciales, sacrificando funcionalidad adicional.
+nightly	Compilación nocturna, contiene los últimos cambios y características experimentales.	docker pull redis:nightly	Puede ser inestable; no se recomienda para entornos de producción.
+rc (Release Candidate)	Versión candidata antes del lanzamiento oficial.	docker pull ubuntu:20.04-rc	Ideal para pruebas finales antes de adoptar la versión estable.
+sha256 digest	Identificador único basado en el hash SHA256.	docker pull ubuntu@sha256:<digest>	Garantiza una referencia exacta a la imagen, independientemente de la etiqueta mutable.
+
+
+# Arguments y Environment
+# Docker soporta dos tipos de variables que podemos configurar: ARG en tiempo de construcción de la imagen y ENV en tiempo de ejecución del contenedor.
+-- ARG:  Se utiliza como variables solo dentro del Dockerfile pero no disponible en las instrucciones ENTRYPOINT O CMD,
+tampoco en nuestro código o aplicación. Configurable dinámicamente en la construcción de la imagen con el comando --build-arg
+-- ENV: Se utiliza dentro del Dockerfile y disponible también en nuestro código. Configurable dentro del Dockerfile con
+la construcción ENV y via docker run con el comando -e o --env.
+
+# Qués es Docker Compose
+- El uso de Docker Compose su alcance es para definir y ejecutar aplicaciones Docker de múltiples contenedores pero no
+para diferentes máquinas. Docker Compose se encarga de crear y gestionar la red y los volúmenes necesarios, además de los contenedores.
+Docker Compose es una herramienta que permite definir y ejecutar aplicaciones Docker de múltiples contenedores.
+Con Compose, se define una aplicación en un archivo YAML (docker-compose.yml) y se ejecuta con un solo comando.
+Docker Compose se encarga de crear y gestionar la red y los volúmenes necesarios, además de los contenedores.
+Services o Containers: name (hostname), port, network, env, volumen , image, build, depends_on, restart, command, entrypoint, user, working_dir, expose, healthcheck, cap_add, cap_drop, dns, dns_search, dns_opt
+** docker-compose up -d
+** docker-compose down
+** docker-compose down -v
+** docker-compose ps
+** docker-compose logs
+** docker-compose exec
+** docker-compose build
+** docker-compose up -d --build
+
+# Qué es un Dockerfile
+Un Dockerfile es un archivo de texto que contiene una serie de instrucciones que Docker utilizará para construir una
+imagen de contenedor. Cada instrucción en un Dockerfile crea una capa en la imagen final.
+
+# Términos comunes en Docker
+- Imagen: Plantilla de solo lectura con instrucciones para crear un contenedor.
+- Contenedor: Instancia en ejecución de una imagen.
+- Dockerfile: Archivo de texto con instrucciones para construir una imagen.
+- Docker Hub: Registro público de imágenes de Docker.
+- Docker Compose: Herramienta para definir y ejecutar aplicaciones Docker de múltiples contenedores.
+- Volumen: Almacenamiento persistente para datos de contenedores.
+- Red: Mecanismo de comunicación entre contenedores.
+- ARG: Variable en tiempo de construcción de la imagen.
+- ENV: Variable en tiempo de ejecución del contenedor.
+- Tag: Etiqueta que identifica una versión específica de una imagen.
+- Build: Proceso de construcción de una imagen a partir de un Dockerfile.
+- Pull: Descarga de una imagen desde un registro remoto.
+- Push: Subida de una imagen a un registro remoto.
+- Run: Creación y ejecución de un contenedor a partir de una imagen.
+- Start: Inicio de un contenedor detenido.
+- Stop: Detención de un contenedor en ejecución.
+- Restart: Reinicio de un contenedor en ejecución.
+- Attach: Conexión a un contenedor en ejecución.
+- Exec: Ejecución de un comando en un contenedor en ejecución.
+- Logs: Visualización de los registros de un contenedor.
+- Stats: Estadísticas en tiempo real de un contenedor.
+- Prune: Eliminación de contenedores, imágenes, volúmenes y redes no utilizados.
+- Inspect: Análisis detallado de un contenedor, imagen, volumen o red.
+- Network: Mecanismo de comunicación entre contenedores.
+- Port: Puerto de red expuesto por un contenedor.
+- Healthcheck: Comprobación de salud de un contenedor.
+- Cap_add: Agregar capacidades al contenedor.
+- Multi-stage: Construcción de imágenes en múltiples etapas.
+- Dockerignore: Archivo para excluir archivos y directorios en la construcción de la imagen.
+- Docker Swarm: Orquestador de contenedores integrado en Docker Engine.
+- Kubernetes: Plataforma de orquestación de contenedores de código abierto.
+- Helm: Gestor de paquetes para Kubernetes.
+- Stage: Etapa en un Dockerfile que crea una capa en la imagen final.
+- Compose: Herramienta para definir y ejecutar aplicaciones Docker de múltiples contenedores.
+- Service: Definición de un contenedor en un archivo docker-compose.yml.
+- Stack: Conjunto de servicios en un archivo docker-compose.yml.
+- Orquestación: Coordinación de múltiples contenedores en un entorno distribuido.
+
+
+************ Deploy in AWS EC2 Instance *****************
+-- scp -> Secure Copy
+-- ssh -> Secure Shell
+-- -i -> Identity File
+ -- yum -> Yellowdog Updater Modified
+ -- apt -> Advanced Packaging Tool
+
+
+ ** in terminal Instance Shh
+sudo yum update -y -> update all packages
+sudo amazon-linux-extras install docker -> install docker of Amazon Linux
+sudo service docker start -> start docker service
+sudo systemctl start docker -> start docker service
+(search) install docker-compose -> install docker-compose
+sudo curl -SL https://github.com/docker/compose/releases/download/v2.32.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose -> download docker-compose
+sudo chmod +x /usr/local/bin/docker-compose -> se le da permisos de ejecución
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose -> se crea un enlace simbólico es para que se pueda ejecutar el comando sin especificar la ruta completa
+*****************************
+
+
+******** KUBERNETES ********
+- Kubernetes es una plataforma de código abierto para automatizar la implementación, escalado y operación de aplicaciones en contenedores.
+
+minikube start --driver=hyperv  -> para iniciar minikube con el driver de hyperv
+minikube status -> para ver el estado de minikube
+minikube dashboard
+kubectl create deployment mysql8 --image=mysql:8 --port=3306 -> para crear un deployment de mysql8
+deployment-user.yaml
+kubectl get deployments -> para ver los deployments
+kubectl get services -> para ver los servicios
+kubectl get pods -> para ver los pods
+kubectl describe pod mysql8-7b4d7c6d8b-7z5zv -> para ver la descripción de un pod
+kubectl logs mysql8-78cbd8798-tx7hl -> para ver los logs de un pod
+kubectl delete deployment mysql8 -> para eliminar un deployment
+kubectl create deployment mysql8 --image=mysql:8 --port=3306 --dry-run=client -o yaml > deployment-mysql.yaml -> para crear un deployment y guardarlo en un archivo yaml
+kubectl create deployment msvc-user --image=michaellibarra/msvc-user:latest --port=8001 --dry-run=client  -o yaml > deployment-user.yaml -> para crear un deployment y guardarlo en un archivo yaml
+kubectl get service msvc-user -o yaml > svc-user.yaml -> para guardar un servicio en un archivo yaml
+kubectl apply -f deployment-mysql.yaml -> para aplicar un archivo yaml
+kubectl delete -f .\deployment-mysql.user -> para eliminar un archivo yaml
+kubectl apply -f .\deployment-user.yaml -> para aplicar un archivo yaml
+kubectl expose deployment mysql8 --port=3306 --type=  -> para exponer un deployment como un servicio, type existe ClusterIP, NodePort, LoadBalancer y ExternalName, ClusterIP es el valor por defecto y es el que se usa para comunicar los pods entre sí, NodePort expone el servicio en un puerto fijo en cada nodo, LoadBalancer expone el servicio a través de un balanceador de carga y ExternalName expone el servicio como un nombre DNS.
+kubectl create deployment msvc-user --image=michaellibarra/msvc-user --port=8001 -> para crear un deployment de msvc-user
+kubectl expose deployment msvc-user --port=8001 --type=LoadBalancer -> para exponer un deployment como un servicio de tipo LoadBalancer
+kubectl expose deployment msvc-user --port=8001 --target-port=8001 --name=msvc-user --type=ClusterIP -> para exponer un deployment como un servicio de tipo ClusterIP
+minikube service msvc-user --url -> para obtener la url del servicio msvc-user
+ kubectl set image deployment msvc-user msvc-user=michaellibarra/msvc-user:latest -> para actualizar la imagen de un deployment
+ kubectl scale deployment msvc-user --replicas=1 -> para escalar un deployment
+ # Elimina el pod con el estado ImagePullBackOff
+ kubectl delete pod msvc-user-6bf6fd974c-jmzqb
+kubectl get service mysql8 -o yaml > svc-mysql.yaml -> para guardar un servicio en un archivo yaml
+kubectl apply -f .\deployment-postgres.yaml -f .\svc-postgres.yaml
+kubectl get sc -> para ver los storage class disponibles en el clúster que nos sirve para definir el tipo de almacenamiento que se va a utilizar
+kubectl apply -f .\mysql-pv.yaml -f .\mysql-pvc.yaml -> para aplicar un archivo yaml de volumen persistente y de volumen persistente claim
+kubectl get pv -> para ver los volúmenes persistentes
+kubectl get pvc -> para ver los volúmenes persistentes claim
+kubectl get pods -o wide -> para ver los pods con más información
+kubectl apply -f .\configmap.yaml -> para aplicar un archivo yaml de configmap
+kubectl get configmap -> para ver los configmaps
+kubectl apply -f .\secret.yaml -> para aplicar un archivo yaml de secret
+kubectl get secret -> para ver los secrets
+kubectl create clusterrolebinding admin --clusterrole=cluster-admin --serviceaccount=default:default -> para crear un clusterrolebinding con el rol cluster-admin y el serviceaccount default:default que es el que se utiliza por defecto en el clúster que utiliza para dar permisos de administrador en el clúster  a un service account en un namespace
+
+# Términos comunes en Kubernetes
+- Spring cloud kubernetes: Herramienta que permite integrar aplicaciones Spring Boot con Kubernetes.
+- DiscoveryClient: Resuelve nombres de servicios en un entorno de microservicios.
+- Spring Cloud Config: Herramienta para centralizar la configuración de aplicaciones.
+- Spring Cloud LoadBalancer: Herramienta para balancear la carga de peticiones entre instancias de un servicio, tipo de balanceo RoundRobin es el valor por defecto lo que significa que se distribuyen las peticiones de manera equitativa entre las instancias, decir que distribuye de forma que cada instancia reciba la misma cantidad de peticiones.
+- Kubectl: Herramienta de línea de comandos para interactuar con clústeres de Kubernetes.
+- Minikube: Herramienta que permite ejecutar un clúster de Kubernetes local en una máquina virtual.
+- Pod: Unidad básica de ejecución en Kubernetes, formado por uno o más contenedores.
+- Deployment: Controlador que define cómo se crean y actualizan los pods.
+- Service: Abstracción que define un conjunto de pods y una política de acceso a ellos.
+- Namespace: Espacio lógico que permite dividir un clúster en múltiples entornos aislados.
+- Node: Máquina física o virtual que forma parte de un clúster de Kubernetes.
+- Cluster: Conjunto de nodos que ejecutan aplicaciones en contenedores gestionados por Kubernetes.
+- Container: Instancia en ejecución de una imagen de contenedor.
+- Image: Plantilla de solo lectura con instrucciones para crear un contenedor.
+- Volume: Almacenamiento persistente para datos de contenedores.
+- Network: Mecanismo de comunicación entre contenedores y nodos.
+- Ingress: Controlador que gestiona el tráfico de red hacia los servicios de un clúster.
+- ConfigMap: Objeto que almacena configuraciones de aplicaciones en formato clave-valor.
+- Secret: Objeto que almacena información sensible en formato clave-valor.
+- PersistentVolume: Almacenamiento persistente que puede ser reclamado por un pod.
+- PersistentVolumeClaim: Solicitud de almacenamiento persistente por parte de un pod.
+- StatefulSet: Controlador que garantiza la identidad y el orden de los pods.
+- DaemonSet: Controlador que garantiza que un pod se ejecute en cada nodo del clúster.
+- Job: Controlador que ejecuta tareas completas o en lotes.
+- CronJob: Controlador que ejecuta tareas en función de un horario programado.
+- Helm: Gestor de paquetes para Kubernetes.
+- Imperative: Modelo de gestión de recursos en Kubernetes basados en comandos.
+- Declarative: Modelo de gestión de recursos en Kubernetes basados en archivos YAML.
+- Replica Sets: Controlador que garantiza un número específico de réplicas de un pod.
+- Jobs: Controlador que ejecuta tareas completas o en lotes.
+- ClusterIP: Tipo de servicio que expone un servicio solo dentro del clúster.
+- NodePort: Tipo de servicio que expone un servicio en un puerto fijo en cada nodo.
+- LoadBalancer: Tipo de servicio que expone un servicio a través de un balanceador de carga.
+- ExternalName: Tipo de servicio que expone un servicio como un nombre DNS.
+- Ingress Controller: Controlador que gestiona el tráfico de red hacia los servicios de un clúster.
+- Kind: Tipo de recurso en Kubernetes, como Pod, Deployment, Service, etc.
+- API Server: Componente de Kubernetes que expone la API REST del clúster.
+- Controller Manager: Componente de Kubernetes que gestiona los controladores de nivel superior.
+- Scheduler: Componente de Kubernetes que asigna pods a nodos en función de recursos y restricciones.
+- Kubelet: Agente que ejecuta en cada nodo y se encarga de la gestión de contenedores.
+- Kube Proxy: Componente de Kubernetes que gestiona el tráfico de red en un clúster.
+- Kube DNS: Servicio de resolución de nombres de dominio en un clúster de Kubernetes.
+- HostPath: Tipo de volumen que monta un directorio del nodo en un pod.
+- EmptyDir: Tipo de volumen que se crea y se destruye junto con un pod.
+- Secret: Objeto que almacena información sensible en formato clave-valor.
+- Volumes: Almacenamiento persistente para datos de contenedores.
+- NodePort: Tipo de servicio que expone un servicio en un puerto fijo en cada nodo, a lo que se puede acceder desde
+fuera del clúster, pero no es recomendable para producción ya que no es seguro porqué expone el puerto de cada nodo.
+- MiniKube: Herramienta que permite ejecutar un clúster de Kubernetes local en una máquina virtual.
+- Nodo: Máquina física o virtual que forma parte de un clúster de Kubernetes.
+- persistentVolumeClaim: Solicitud de almacenamiento persistente por parte de un pod.
+- Client Discovery: Resuelve nombres de servicios en un entorno de microservicios.
