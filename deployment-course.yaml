@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-course
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msvc-course
+  template:
+    metadata:
+      labels:
+        app: msvc-course
+    spec:
+      containers:
+        - name: msvc-course
+          image: michaellibarra/msvc-course:latest
+          ports:
+            - containerPort: 8002
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-course
+                  key: port
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-course
+                  key: db_host
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-course
+                  key: db_database
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: msvc-course
+                  key: db_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: msvc-course
+                  key: db_password
+            - name: USER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-course
+                  key: user_url
+          resources:
+            requests:
+              memory: "200Mi" # 64Mi es 64 megabytes
+              cpu: "200m" # 200m es 200 milicpus
+            limits:
+              memory: "328Mi"
+              cpu: "300m"

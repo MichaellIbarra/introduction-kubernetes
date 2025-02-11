@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: some-postgres # nombre del deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: some-postgres # selector para que el deployment se asocie a los pods con el label app: some-postgres
+  template: # plantilla para los pods
+    metadata:
+      labels:
+        app: some-postgres # label para los pods
+    spec: # especificación de los pods
+      containers: # contenedores
+        - name: some-postgres # nombre del contenedor
+          image: postgres:13
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: msvc-course
+                  key: db_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-course
+                  key: db_database
+          volumeMounts: # montaje de volúmenes
+            - mountPath: /var/lib/postgresql/data
+              name: data-postgres
+      volumes: # volúmenes persistentes
+        - name: data-postgres
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+#          hostPath:
+#            path: /var/lib/postgresql/data
+#            type: DirectoryOrCreate # crear el directorio si no existe

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec: # especificación del volumen persistente
+  capacity: # capacidad del volumen
+    storage: 1Gi # 1 gigabyte
+  volumeMode: Filesystem # modo de volumen que es un sistema de archivos (Filesystem), Block es para almacenamiento
+  storageClassName: standard # clase de almacenamiento que es standard porque es local y no tiene protección de datos
+  accessModes:  # modos de acceso
+    - ReadWriteOnce
+  hostPath: # hostPath es la ruta del host donde se almacenarán los datos pero también es un tipo de volumen que se crea en el nodo
+    path: /var/lib/postgresql/data
+    type: DirectoryOrCreate

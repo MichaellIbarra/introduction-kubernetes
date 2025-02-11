@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-course
+spec:
+  ports:
+    - port: 8002 # puerto del servicio
+      protocol: TCP
+      targetPort: 8002 # puerto del pod
+  selector:
+    app: msvc-course # selector para que el servicio se asocie a los pods con el label app: msvc-user
+  type: LoadBalancer # tipo de servicio LoadBalancer es para que se pueda acceder desde fuera del cluster

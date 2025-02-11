@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap # ConfigMap es de kubernetes y se usa para almacenar configuraciones
+metadata:
+  name: msvc-user
+data:
+  lb_auth_issuer_uri: "http://172.20.124.127:30512"
+  lb_users_uri: "http://172.20.124.127:30214"
+  port: "8001"
+  db_host: "mysql8:3306"
+  db_database: "msvc_user"
+#  db_user: "root"
+#  db_password: "matichelo17@"
+  course_url: "msvc-course:8002"
+  # application.yaml: |- se usa para que el valor sea un string multilinea
+  application.yaml: |-
+    config:
+      text: Configurando ambiente por defecto
+    ---
+    spring:
+      config:
+        activate:
+          on-profile: dev
+    config:
+      text: Configurando ambiente de desarrollo
+    ---
+    spring:
+      config:
+        activate:
+          on-profile: prod
+    config:
+      text: Configurando ambiente de produccion
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: msvc-course
+data:
+  port: "8002"
+  db_host: "some-postgres:5432"
+  db_database: "msvc_course"
+#  db_user: "postgres"
+#  db_password: "Matichelo17"
+  user_url: "msvc-user:8001"
+---

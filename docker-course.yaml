@@ -1,0 +1,42 @@
+services:
+  some-postgres:
+    container_name: some-postgres
+    image: postgres:13
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_PASSWORD: Matichelo17
+      POSTGRES_DB: msvc_course
+    volumes:
+      - data-postgres:/var/lib/postgresql/data
+    restart: always
+    networks:
+        - spring
+  msvc-course:
+    container_name: msvc-course
+    image: michaellibarra/msvc-course:latest
+#    build:
+#      context: ./
+#      dockerfile: ./msvc-course/Dockerfile
+    ports:
+      - 8002:8002
+#    env_file:
+#      - ./msvc-course/.env
+    environment:
+      PORT: 8002
+      DB_HOST: some-postgres:5432
+      DB_DATABASE: msvc_course
+      DB_USER: postgres
+      DB_PASSWORD: Matichelo17
+      USER_URL: 18.119.108.176:8001
+    networks:
+        - spring
+    depends_on:
+      - some-postgres
+volumes:
+  data-postgres:
+    name: data-postgres
+networks:
+  spring:
+    external: true
+#    name: spring

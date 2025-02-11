@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+<!--
+parent: Se le coloca el parent a este proyecto para que herede las dependencias y configuraciones del proyecto padre
+que en este caso es el proyecto curso-kubernetes, el cual es un proyecto padre que va a contener a los demas proyectos
+que se van a crear.
+-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>dev.matichelo.msvc</groupId>
+    <artifactId>curso-kubernetes</artifactId>
+    <version>1.0-SNAPSHOT</version>
+<!--
+  Se le coloca pom como empaquetado para que no genere un archivo jar, ya que este proyecto es un proyecto padre, a
+  lo que me refiero con proyecto padre es que este proyecto es el que va a contener a los demas proyectos que se
+    van a crear, por lo que no es necesario que genere un archivo jar.
+  -->
+    <packaging>pom</packaging>
+    <modules>
+        <module>msvc-user</module>
+        <module>msvc-course</module>
+        <module>msvc-gateway</module>
+        <module>msvc-auth</module>
+    </modules>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+</project>

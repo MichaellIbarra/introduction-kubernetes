@@ -1,0 +1,79 @@
+services:
+  mysql8:
+    container_name: mysql8
+    image: mysql:8
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: matichelo17@
+      MYSQL_DATABASE: msvc_user
+    volumes:
+      - data-mysql:/var/lib/mysql
+    restart: always
+    networks:
+      - spring
+  some-postgres:
+    container_name: some-postgres
+    image: postgres:13
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_PASSWORD: Matichelo17
+      POSTGRES_DB: msvc_course
+    volumes:
+      - data-postgres:/var/lib/postgresql/data
+    restart: always
+    networks:
+        - spring
+  msvc-user:
+    container_name: msvc-user
+    image: michaellibarra/msvc-user:latest
+#    build:
+#      context: ./
+#      dockerfile: ./msvc-user/Dockerfile
+    ports:
+      - "8001:8001"
+#    env_file:
+#      - ./msvc-user/.env
+    environment:
+      PORT: 8001
+      DB_HOST: mysql8:3306
+      DB_DATABASE: msvc_user
+      DB_USER: root
+      DB_PASSWORD: matichelo17@
+      COURSE_URL: msvc-course:8002
+    networks:
+      - spring
+    depends_on:
+      - mysql8
+  msvc-course:
+    container_name: msvc-course
+    image: michaellibarra/msvc-course:latest
+#    build:
+#      context: ./
+#      dockerfile: ./msvc-course/Dockerfile
+    ports:
+      - 8002:8002
+#    env_file:
+#      - ./msvc-course/.env
+    environment:
+      PORT: 8002
+      DB_HOST: some-postgres:5432
+      DB_DATABASE: msvc_course
+      DB_USER: postgres
+      DB_PASSWORD: Matichelo17
+      USER_URL: msvc-user:8001
+    networks:
+        - spring
+    depends_on:
+      - some-postgres
+      - msvc-user
+volumes:
+  data-mysql:
+    name: data-mysql
+  data-postgres:
+    name: data-postgres
+networks:
+  spring:
+    external: true
+#    name: spring

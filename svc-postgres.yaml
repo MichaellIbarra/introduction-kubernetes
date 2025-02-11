@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: some-postgres
+spec:
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: some-postgres # selector para que el servicio se asocie a los pods con el label app: some-postgres
+  type: ClusterIP # tipo de servicio ClusterIP es para que solo se pueda acceder desde dentro del cluster

@@ -1,0 +1,42 @@
+services:
+  mysql8:
+    container_name: mysql8
+    image: mysql:8
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: matichelo17@
+      MYSQL_DATABASE: msvc_user
+    volumes:
+      - data-mysql:/var/lib/mysql
+    restart: always
+    networks:
+      - spring
+  msvc-user:
+    container_name: msvc-user
+    image: michaellibarra/msvc-user:latest
+#    build:
+#      context: ./
+#      dockerfile: ./msvc-user/Dockerfile
+    ports:
+      - "8001:8001"
+#    env_file:
+#      - ./msvc-user/.env
+    environment:
+      PORT: 8001
+      DB_HOST: mysql8:3306
+      DB_DATABASE: msvc_user
+      DB_USER: root
+      DB_PASSWORD: matichelo17@
+      COURSE_URL: 3.137.180.66:8002
+    networks:
+      - spring
+    depends_on:
+      - mysql8
+volumes:
+  data-mysql:
+    name: data-mysql
+networks:
+  spring:
+    external: true
+#    name: spring
