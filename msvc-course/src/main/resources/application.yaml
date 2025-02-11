@@ -1,0 +1,41 @@
+spring:
+  cloud:
+    kubernetes:
+      secrets:
+        enable-api: true
+      discovery:
+        all-namespaces: true
+  application:
+    name: msvc-course
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost:5434}/${DB_DATABASE:msvc_course}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:Matichelo17}
+  jpa:
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+server:
+  port: ${PORT:8002}
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+  file:
+    path: /app/logs
+msvc:
+  user:
+    url: ${USER_URL:msvc-user:8001}
+
+# configuration for kubernetes
+# secrets.enable-api=true es para habilitar el uso de secretos en kubernetes en spring cloud
+#spring.cloud.kubernetes.secrets.enable-api=true
+## spring.cloud.kubernetes.discovery.all-namespaces=true es para que spring cloud pueda descubrir todos los servicios en todos los namespaces
+#spring.cloud.kubernetes.discovery.all-namespaces=true
